@@ -1,0 +1,15 @@
+{
+    "1": {
+        "id": "1",
+        "title": "first question",
+        "content": "content of question",
+        "tags": ["general"]
+    },
+    
+    "2": {
+        "id": "2",
+        "title": "how to ...?",
+        "content": "need help with ...",
+        "tags": ["faq", "help"]
+    }
+}
