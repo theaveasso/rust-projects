@@ -1,7 +1,8 @@
 // create a local store for our questions
 // using hashmap
-use std::{collections::HashMap, str::FromStr, error::Error, io::ErrorKind};
+use std::{collections::HashMap, str::FromStr, io::Error, io::ErrorKind};
 
+#[derive(Debug, Clone)]
 pub struct Store {
     questions: HashMap<QuestionId, Question>
 }
@@ -17,17 +18,17 @@ impl Store {
     // hard coded example
     pub fn init(&mut self) -> Self {
         let question = Question::new(
-            id: QuestionId.from_str("1").expected("No valid id"),
-            title: "how to ...?".to_string(),
-            content: "need help with ...".to_string(),
-            tags: Some(vec!("general".to_string()))
+            QuestionId::from_str("1").expect("No valid id provided"), 
+            "how to ...".to_string(), 
+            "need help with ...".to_string(), 
+            Some(vec!("general".to_string()))
         );
 
-        self.add_question(&question)
+        self.add_question(question)
     }
 
     // add_question: adding an larger example base
-    pub fn add_question(mut self, question: &Question) -> Self {
+    pub fn add_question(mut self, question: Question) -> Self {
         self.questions.insert(question.id.clone(), question.clone());
         self
     }
@@ -42,7 +43,7 @@ impl FromStr for QuestionId {
     fn from_str(id: &str) -> Result<Self, Self::Err> {
         match id.is_empty() {
             false => Ok(QuestionId(id.to_string())),
-            true => Err(Error::new(ErrorKind::InvalidInput, "No id provided")),
+            true => Err(Error::new(ErrorKind::InvalidInput, "No valid id provided"))
         }
     }
 }
