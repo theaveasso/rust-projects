@@ -1,17 +1,22 @@
+use std::sync::Arc;
 use std::collections::HashMap;
 
+use parking_lot::RwLock;
 use serde::{Deserialize, Serialize};
 use warp::{reject::Reject, Rejection, Reply, hyper::StatusCode};
 
 #[derive(Debug, Clone)]
 pub struct Store {
-    questions: HashMap<QuestionId, Question>
+    // prevent race conditions
+    // Arc : only allows one writer at a time
+    // RwLock : allow reader simontaouly
+    questions: Arc<RwLock<HashMap<QuestionId, Question>>>
 }
 impl Store {
     // new
     pub fn new() -> Self {
         Store {
-            questions: Self::init()
+            questions: Arc::new(RwLock::new(Self::init()))
         }
     }
     // init
@@ -22,12 +27,10 @@ impl Store {
             .expect("Fail to read file")
     }
     // add question
-    pub fn add_question(mut self, question: &Question) -> Self {
-        self.questions.insert(question.id.clone(), question.clone());
-        self
-    }
+    // add question
 }
 #[derive(Debug, Clone, Deserialize, Serialize)]
+
 pub struct Question {
     pub id: QuestionId,
     pub title: String,
@@ -96,13 +99,22 @@ pub fn extract_pagination(params: HashMap<String, String>) -> Result<Pagination,
 pub async fn get_questions(params: HashMap<String, String>, store: Store) -> Result<impl warp::Reply, warp::Rejection> {
     if params.len() > 0 {
         let pagination = extract_pagination(params)?;
-        let res: Vec<Question> = store.questions.values().cloned().collect();
+        let res: Vec<Question> = store.questions.read().values().cloned().collect();
         let res = &res[pagination.start..pagination.end];
         Ok(warp::reply::json(&res))
 
     } else {
-        let res: Vec<Question> = store.questions.values().cloned().collect();
+        let res: Vec<Question> = store.questions.read().values().cloned().collect();
         Ok(warp::reply::json(&res))
     }
     // convert to warp json reply
+}
+
+pub async fn add_question(store: Store, question: Question) -> Result<impl warp::Reply, warp::Rejection> {
+    store.questions.write().insert(question.clone().id, question);
+
+    Ok(warp::reply::with_status(
+        "Question added",
+        StatusCode::OK
+    ))
 }

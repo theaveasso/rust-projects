@@ -11,13 +11,19 @@ async fn main() {
         .and(warp::path::end())
         .and(warp::query())
         .and(store_filter.clone())
-        .and_then(colab::get_questions)
-        .recover(return_error);
+        .and_then(colab::get_questions);
 
-    let routes = get_questions;
+    let add_question = warp::post()
+        .and(warp::path("questions")
+        .and(warp::path::end())
+        .and(store_filter.clone())
+        .and(warp::body::json())
+        .and_then(colab::add_question)
+    );
+
+    let routes = get_questions.or(add_question).recover(return_error);
     
     warp::serve(routes)
         .run(([127,0,0,1], 5000))
         .await;
 }
-
