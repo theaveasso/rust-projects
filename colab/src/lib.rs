@@ -3,7 +3,7 @@ use std::collections::HashMap;
 
 use parking_lot::RwLock;
 use serde::{Deserialize, Serialize};
-use warp::{reject::Reject, Rejection, Reply, hyper::StatusCode};
+use warp::{reject::Reject, Rejection, Reply, hyper::StatusCode, body::BodyDeserializeError};
 
 #[derive(Debug, Clone)]
 pub struct Store {
@@ -51,6 +51,10 @@ pub async fn return_error(r: Rejection) -> Result<impl Reply, Rejection> {
         Ok(warp::reply::with_status(
             error.to_string(), 
             StatusCode::RANGE_NOT_SATISFIABLE))
+    } else if let Some(error) = r.find::<BodyDeserializeError>() {
+        Ok(warp::reply::with_status(
+            error.to_string(), 
+            StatusCode::FORBIDDEN))
     } else {
         Ok(warp::reply::with_status(
             "route not found".to_string(), 
@@ -64,6 +68,7 @@ pub async fn return_error(r: Rejection) -> Result<impl Reply, Rejection> {
 #[derive(Debug)]
 pub enum Error {
     ParseError(std::num::ParseIntError),
+    QuestionNotFound,
     MissingParams,
 }
 impl Reject for Error {}
@@ -72,6 +77,7 @@ impl std::fmt::Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
             Error::ParseError(ref err) => write!(f, "cannot parse parameter: {}", err),
+            Error::QuestionNotFound => write!(f, "question not found"),
             Error::MissingParams => write!(f, "missing parameter")
         }
     }
@@ -110,6 +116,7 @@ pub async fn get_questions(params: HashMap<String, String>, store: Store) -> Res
     // convert to warp json reply
 }
 
+// post
 pub async fn add_question(store: Store, question: Question) -> Result<impl warp::Reply, warp::Rejection> {
     store.questions.write().insert(question.clone().id, question);
 
@@ -117,4 +124,26 @@ pub async fn add_question(store: Store, question: Question) -> Result<impl warp:
         "Question added",
         StatusCode::OK
     ))
+}
+
+// put
+pub async fn update_question(id: String, store: Store, question: Question) -> Result<impl warp::Reply, warp::Rejection> {
+    match store.questions.write().get_mut(&QuestionId(id)) {
+        Some(q) => *q = question,
+        None => return Err(warp::reject::custom(Error::QuestionNotFound))
+    }
+
+    Ok(warp::reply::with_status(
+        "Question updated", 
+        StatusCode::OK))
+}
+
+// delete
+pub async fn delete_question(id: String, store: Store) -> Result<impl warp::Reply, warp::Rejection> {
+    match store.questions.write().remove(&QuestionId(id)) {
+        Some(_) => return Ok(warp::reply::with_status(
+            "Question delete", 
+            StatusCode::OK)),
+        None => return Err(warp::reject::custom(Error::QuestionNotFound))
+    }
 }
