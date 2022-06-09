@@ -3,7 +3,7 @@
         "id": "1",
         "title": "first question",
         "content": "content of question",
-        "tags": ["general"]
+        "tags": ["general", "faq"]
     },
     
     "2": {
