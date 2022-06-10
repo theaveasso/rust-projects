@@ -1,5 +1,15 @@
+mod types;
+mod store;
+mod error;
+mod routes;
+
 use warp::Filter;
-use colab::{return_error, Store};
+
+use crate::store::Store;
+use crate::routes::question;
+use crate::error::error::return_error;
+
+
 
 #[tokio::main]
 async fn main() {
@@ -12,7 +22,7 @@ async fn main() {
         .and(warp::path::end())
         .and(warp::query())
         .and(store_filter.clone())
-        .and_then(colab::get_questions);
+        .and_then(question::get_questions);
 
     // post
     let add_question = warp::post()
@@ -20,7 +30,7 @@ async fn main() {
         .and(warp::path::end())
         .and(store_filter.clone())
         .and(warp::body::json())
-        .and_then(colab::add_question);
+        .and_then(question::add_question);
 
     // put
     let update_question = warp::put()
@@ -29,7 +39,7 @@ async fn main() {
         .and(warp::path::end())
         .and(store_filter.clone())
         .and(warp::body::json())
-        .and_then(colab::update_question);
+        .and_then(question::update_question);
 
     // delete
     let delete_question = warp::delete()
@@ -37,7 +47,7 @@ async fn main() {
         .and(warp::path::param::<String>())
         .and(warp::path::end())
         .and(store_filter.clone())
-        .and_then(colab::delete_question);
+        .and_then(question::delete_question);
 
     let routes = get_questions.or(add_question).or(update_question).or(delete_question).recover(return_error);
     
