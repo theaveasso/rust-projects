@@ -1,6 +1,5 @@
-use warp::reject::Reject;
 use serde::{Deserialize, Serialize};
-
+use warp::reject::Reject;
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 
@@ -8,7 +7,7 @@ pub struct Question {
     pub id: QuestionId,
     pub title: String,
     pub content: String,
-    pub tags: Option<Vec<String>>
+    pub tags: Option<Vec<String>>,
 }
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Deserialize, Serialize)]

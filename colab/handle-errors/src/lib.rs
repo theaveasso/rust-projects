@@ -1,4 +1,4 @@
-use warp::{body::BodyDeserializeError, hyper::StatusCode, reject::Reject, Rejection, Reply};
+use warp::{Reply, Rejection, reject::Reject, hyper::StatusCode, body::BodyDeserializeError};
 
 #[derive(Debug)]
 pub enum Error {
@@ -14,7 +14,7 @@ impl std::fmt::Display for Error {
         match *self {
             Error::MissingParams => write!(f, "Missing parameters"),
             Error::QuestionNotFound => write!(f, "Question not found"),
-            Error::ParseError(ref err) => write!(f, "Cannot parse parameter: {}", err),
+            Error::ParseError(ref err) => write!(f, "Cannot parse parameter: {}", err)
         }
     }
 }
@@ -22,18 +22,17 @@ impl std::fmt::Display for Error {
 pub async fn return_error(r: Rejection) -> Result<impl Reply, Rejection> {
     if let Some(error) = r.find::<Error>() {
         Ok(warp::reply::with_status(
-            error.to_string(),
-            StatusCode::RANGE_NOT_SATISFIABLE,
-        ))
+            error.to_string(), 
+            StatusCode::RANGE_NOT_SATISFIABLE))
     } else if let Some(error) = r.find::<BodyDeserializeError>() {
         Ok(warp::reply::with_status(
-            error.to_string(),
-            StatusCode::FORBIDDEN,
-        ))
+            error.to_string(), 
+            StatusCode::FORBIDDEN))
     } else {
         Ok(warp::reply::with_status(
-            "route not found".to_string(),
-            StatusCode::NOT_FOUND,
-        ))
+            "route not found".to_string(), 
+            StatusCode::NOT_FOUND))
     }
 }
+
+

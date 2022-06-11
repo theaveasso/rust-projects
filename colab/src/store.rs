@@ -1,8 +1,11 @@
-use std::sync::Arc;
 use parking_lot::RwLock;
 use std::collections::HashMap;
+use std::sync::Arc;
 
-use crate::types::{question::{Question, QuestionId}, answer::{AnswerId, Answer}};
+use crate::types::{
+    answer::Answer,
+    question::{Question, QuestionId},
+};
 
 #[derive(Debug, Clone)]
 pub struct Store {
@@ -10,21 +13,20 @@ pub struct Store {
     // Arc : only allows one writer at a time
     // RwLock : allow reader simontaouly
     pub questions: Arc<RwLock<HashMap<QuestionId, Question>>>,
-    pub answers: Arc<RwLock<HashMap<String, Answer>>>
+    pub answers: Arc<RwLock<HashMap<String, Answer>>>,
 }
 impl Store {
     // new
     pub fn new() -> Self {
         Store {
             questions: Arc::new(RwLock::new(Self::init())),
-            answers: Arc::new(RwLock::new(HashMap::new()))
+            answers: Arc::new(RwLock::new(HashMap::new())),
         }
     }
     // init
     pub fn init() -> HashMap<QuestionId, Question> {
         // read from file
         let file = include_str!("../questions.json");
-        serde_json::from_str(file)
-            .expect("Fail to read file")
+        serde_json::from_str(file).expect("Fail to read file")
     }
 }

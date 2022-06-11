@@ -1,15 +1,13 @@
-mod types;
-mod store;
 mod error;
 mod routes;
+mod store;
+mod types;
 
+use handle_errors::return_error;
 use warp::Filter;
 
-use crate::store::Store;
 use crate::routes::question;
-use crate::error::error::return_error;
-
-
+use crate::store::Store;
 
 #[tokio::main]
 async fn main() {
@@ -49,9 +47,11 @@ async fn main() {
         .and(store_filter.clone())
         .and_then(question::delete_question);
 
-    let routes = get_questions.or(add_question).or(update_question).or(delete_question).recover(return_error);
-    
-    warp::serve(routes)
-        .run(([127,0,0,1], 5000))
-        .await;
+    let routes = get_questions
+        .or(add_question)
+        .or(update_question)
+        .or(delete_question)
+        .recover(return_error);
+
+    warp::serve(routes).run(([127, 0, 0, 1], 5000)).await;
 }

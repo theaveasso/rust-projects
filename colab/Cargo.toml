@@ -11,3 +11,4 @@ serde_json = "1.0.81"
 parking_lot = "0.12.1"
 tokio = {version = "1.19.2", features = ["full"] }
 serde = { version = "1.0.137", features = ["derive"] }
+handle-errors = { path = "handle-errors", version = "0.1.0"}
