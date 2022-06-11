@@ -2,20 +2,22 @@ use std::sync::Arc;
 use parking_lot::RwLock;
 use std::collections::HashMap;
 
-use crate::types::question::{Question, QuestionId};
+use crate::types::{question::{Question, QuestionId}, answer::{AnswerId, Answer}};
 
 #[derive(Debug, Clone)]
 pub struct Store {
     // prevent race conditions
     // Arc : only allows one writer at a time
     // RwLock : allow reader simontaouly
-    pub questions: Arc<RwLock<HashMap<QuestionId, Question>>>
+    pub questions: Arc<RwLock<HashMap<QuestionId, Question>>>,
+    pub answers: Arc<RwLock<HashMap<String, Answer>>>
 }
 impl Store {
     // new
     pub fn new() -> Self {
         Store {
-            questions: Arc::new(RwLock::new(Self::init()))
+            questions: Arc::new(RwLock::new(Self::init())),
+            answers: Arc::new(RwLock::new(HashMap::new()))
         }
     }
     // init

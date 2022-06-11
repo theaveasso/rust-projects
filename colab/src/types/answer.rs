@@ -4,9 +4,9 @@ use crate::types::question::QuestionId;
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Answer {
-    pub id: AnswerId,
+    pub id: String,
     pub content: String,
-    pub question_id: QuestionId
+    pub question_id: String
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq, Hash)]
